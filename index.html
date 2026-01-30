@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Memórias Flutuantes</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-glow" aria-hidden="true"></div>
+    <main class="stage">
+      <section class="counter" aria-live="polite">
+        <div class="counter__label">Desde 27/12/2022</div>
+        <div class="counter__grid">
+          <div class="counter__block"><span id="years">0</span><small>anos</small></div>
+          <div class="counter__block"><span id="months">0</span><small>meses</small></div>
+          <div class="counter__block"><span id="days">0</span><small>dias</small></div>
+          <div class="counter__block"><span id="hours">0</span><small>horas</small></div>
+          <div class="counter__block"><span id="minutes">0</span><small>min</small></div>
+          <div class="counter__block"><span id="seconds">0</span><small>seg</small></div>
+        </div>
+      </section>
+
+      <section class="floating" id="floating" aria-label="Galeria flutuante"></section>
+    </main>
+
+    <div class="lightbox" id="lightbox" aria-hidden="true">
+      <button class="lightbox__close" id="lightboxClose" aria-label="Fechar">×</button>
+      <div class="lightbox__content" id="lightboxContent"></div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
