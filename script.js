@@ -95,15 +95,19 @@ const shuffle = (arr) => {
   return copy;
 };
 
+const pendingLoads = [];
+const MAX_LOAD_BATCH = 6;
+
 const createMediaItem = (file, index, layout, sizePx) => {
   const item = document.createElement("div");
   item.className = "media-item";
   item.dataset.file = file;
 
   const element = document.createElement("img");
-  element.src = file;
-  element.loading = "eager";
+  element.dataset.src = file;
+  element.loading = "lazy";
   element.decoding = "async";
+  element.fetchPriority = "low";
 
   item.appendChild(element);
 
@@ -111,7 +115,7 @@ const createMediaItem = (file, index, layout, sizePx) => {
   const { left, top, driftX, driftY } = layout;
   const scale = 0.7 + Math.random() * 0.6;
   const rotate = (Math.random() * 20 - 10).toFixed(2) + "deg";
-  const duration = (12 + Math.random() * 10).toFixed(2) + "s";
+  const duration = (18 + Math.random() * 14).toFixed(2) + "s";
   const delay = (-Math.random() * 10).toFixed(2) + "s";
 
   item.style.left = `${left}px`;
@@ -135,6 +139,7 @@ const createMediaItem = (file, index, layout, sizePx) => {
     element.addEventListener("error", markReady, { once: true });
   }
 
+  pendingLoads.push(element);
   return item;
 };
 
@@ -182,8 +187,8 @@ const layoutPositions = (count, sizeList) => {
     left = clamp(left, margin, maxLeft);
     top = clamp(top, margin, maxTop);
 
-    const maxDriftX = Math.min(32, Math.min(left - margin, maxLeft - left));
-    const maxDriftY = Math.min(32, Math.min(top - margin, maxTop - top));
+    const maxDriftX = Math.min(20, Math.min(left - margin, maxLeft - left));
+    const maxDriftY = Math.min(20, Math.min(top - margin, maxTop - top));
     const driftX = (Math.random() * (maxDriftX * 2) - maxDriftX) || 0;
     const driftY = (Math.random() * (maxDriftY * 2) - maxDriftY) || 0;
 
@@ -218,8 +223,26 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") closeLightbox();
 });
 
+const startLoadingBatches = () => {
+  const loadNext = () => {
+    const batch = pendingLoads.splice(0, MAX_LOAD_BATCH);
+    batch.forEach((img) => {
+      if (!img.src) img.src = img.dataset.src;
+    });
+    if (pendingLoads.length > 0) {
+      if ("requestIdleCallback" in window) {
+        window.requestIdleCallback(loadNext, { timeout: 150 });
+      } else {
+        setTimeout(loadNext, 80);
+      }
+    }
+  };
+  loadNext();
+};
+
 const buildGallery = () => {
   floating.innerHTML = "";
+  pendingLoads.length = 0;
   const ordered = shuffle(mediaFiles);
   const width = window.innerWidth;
   const baseMin = width < 420 ? 52 : width < 640 ? 58 : 70;
@@ -232,6 +255,7 @@ const buildGallery = () => {
     fragment.appendChild(createMediaItem(file, index, positions[index], sizeList[index]));
   });
   floating.appendChild(fragment);
+  startLoadingBatches();
 };
 
 const pad = (value) => String(value).padStart(2, "0");
